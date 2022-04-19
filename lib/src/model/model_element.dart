@@ -474,8 +474,18 @@ abstract class ModelElement extends Canonicalization
   // True if this is a function, or if it is an type alias to a function.
   bool get isCallable =>
       element is FunctionTypedElement ||
-      (element is TypeAliasElement &&
-          (element as TypeAliasElement).aliasedElement is FunctionTypedElement);
+          /// TODO: testcase based on petitparser 4.4.0 (types.dart:Predicate)
+          _isElementAliasToFunction();
+
+  bool _isElementAliasToFunction() {
+    if (element is TypeAliasElement) {
+      var alias = element as TypeAliasElement;
+      return alias.aliasedElement is FunctionTypedElement ||
+          (alias.aliasedElement == null && alias.aliasedType is FunctionType);
+    } else {
+      return false;
+    }
+  }
 
   // The canonical ModelElement for this ModelElement,
   // or null if there isn't one.
@@ -559,10 +569,10 @@ abstract class ModelElement extends Canonicalization
 
     var candidateLibraries = thisAndExported
         .where((l) =>
-            l.isPublic && l.package.documentedWhere != DocumentLocation.missing)
+    l.isPublic && l.package.documentedWhere != DocumentLocation.missing)
         .where((l) {
       var lookup =
-          l.element.exportNamespace.definedNames[topLevelElement?.name!];
+      l.element.exportNamespace.definedNames[topLevelElement?.name!];
       if (lookup is PropertyAccessorElement) {
         lookup = lookup.variable;
       }
@@ -595,7 +605,7 @@ abstract class ModelElement extends Canonicalization
     // considers this element to be primarily 'from', and therefore,
     // canonical.  Still warn if the heuristic isn't that confident.
     var scoredCandidates =
-        warnable.scoreCanonicalCandidates(candidateLibraries);
+    warnable.scoreCanonicalCandidates(candidateLibraries);
     candidateLibraries = scoredCandidates.map((s) => s.library).toList();
     var secondHighestScore =
         scoredCandidates[scoredCandidates.length - 2].score;
@@ -660,7 +670,7 @@ abstract class ModelElement extends Canonicalization
   late final String fullyQualifiedName = _buildFullyQualifiedName();
 
   late final String _fullyQualifiedNameWithoutLibrary =
-      fullyQualifiedName.replaceFirst('${library!.fullyQualifiedName}.', '');
+  fullyQualifiedName.replaceFirst('${library!.fullyQualifiedName}.', '');
 
   @override
   String get fullyQualifiedNameWithoutLibrary =>
@@ -673,7 +683,7 @@ abstract class ModelElement extends Canonicalization
   late final CharacterLocation? characterLocation = () {
     var lineInfo = compilationUnitElement!.lineInfo;
     assert(element!.nameOffset >= 0,
-        'Invalid location data for element: $fullyQualifiedName');
+    'Invalid location data for element: $fullyQualifiedName');
     var nameOffset = element!.nameOffset;
     if (nameOffset >= 0) {
       return lineInfo.getLocation(nameOffset);
@@ -726,7 +736,7 @@ abstract class ModelElement extends Canonicalization
       var setterDeprecated = pie.setter?.metadata.any((a) => a.isDeprecated);
 
       var deprecatedValues =
-          [getterDeprecated, setterDeprecated].whereNotNull().toList();
+      [getterDeprecated, setterDeprecated].whereNotNull().toList();
 
       // At least one of these should be non-null. Otherwise things are weird
       assert(deprecatedValues.isNotEmpty);
@@ -858,9 +868,15 @@ abstract class ModelElement extends Canonicalization
     }
 
     if (element is TypeAliasElement) {
-      return ModelElement._fromElement(
-              (element as TypeAliasElement).aliasedElement!, packageGraph)
-          .parameters;
+      /// TODO: testcase based on petitparser 4.4.0 (types.dart:Predicate)
+      TypeAliasElement alias = element as TypeAliasElement;
+      if (alias.aliasedElement != null) {
+        return ModelElement._fromElement(alias.aliasedElement!, packageGraph).parameters;
+      } else {
+        return (alias.aliasedType as FunctionType).parameters.map(
+                (e) => ModelElement._fromElement(e, packageGraph) as Parameter
+        ).toList();
+      }
     }
     List<ParameterElement>? params;
     if (element is ExecutableElement) {
@@ -881,7 +897,7 @@ abstract class ModelElement extends Canonicalization
 
     return <Parameter>[
       ...?params?.map(
-          (p) => ModelElement._from(p, library, packageGraph) as Parameter)
+              (p) => ModelElement._from(p, library, packageGraph) as Parameter)
     ];
   }();
 
@@ -893,7 +909,7 @@ abstract class ModelElement extends Canonicalization
 
   @override
   late final String sourceCode =
-      _sourceCodeRenderer.renderSourceCode(super.sourceCode);
+  _sourceCodeRenderer.renderSourceCode(super.sourceCode);
 
   @override
   int compareTo(dynamic other) {
