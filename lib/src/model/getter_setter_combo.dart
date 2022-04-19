@@ -101,9 +101,18 @@ mixin GetterSetterCombo on ModelElement {
     // explicit setters/getters will be handled by those objects, but
     // if a warning comes up for an enclosing synthetic field we have to
     // put it somewhere.  So pick an accessor.
+    /// TODO: testcase based on timezone 0.8.0 (env.dart:timeZoneDatabase)
     if (element.isSynthetic) {
-      if (hasExplicitGetter) return getter!.characterLocation;
-      if (hasExplicitSetter) return setter!.characterLocation;
+      if (hasGetter) {
+        if (!getter!.isSynthetic) warn(PackageWarning.noCanonicalFound, message: 'Getter for synthetic is not synthetic: $element');
+        if (!getter!.isPublic) warn(PackageWarning.noCanonicalFound, message: 'Getter for synthetic is not public: $element');
+        return getter!.characterLocation;
+      }
+      if (hasSetter) {
+        if (!setter!.isSynthetic) warn(PackageWarning.noCanonicalFound, message: 'Setter for synthetic is not synthetic: $element');
+        if (!setter!.isPublic) warn(PackageWarning.noCanonicalFound, message: 'Setter for synthetic is not public: $element');
+        return setter!.characterLocation;
+      }
       assert(false, 'Field and accessors can not all be synthetic: $element');
     }
     return super.characterLocation;
@@ -175,7 +184,7 @@ mixin GetterSetterCombo on ModelElement {
   @override
   bool get hasDocumentationComment =>
       _getterSetterDocumentationComment.isNotEmpty ||
-      element.documentationComment != null;
+          element.documentationComment != null;
 
   /// Derive a documentation comment for the combo by copying documentation
   /// from the [getter] and/or [setter].
