@@ -1,3 +1,3 @@
 {{#hasDocumentation}}
-{{{ documentationAsHtml }}}
+{{{ documentation }}}
 {{/hasDocumentation}}

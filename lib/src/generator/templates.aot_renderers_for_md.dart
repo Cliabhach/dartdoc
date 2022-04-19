@@ -1549,7 +1549,7 @@ String _deduplicated_lib_templates_md__documentation_md(
   final buffer = StringBuffer();
   if (context0.hasDocumentation == true) {
     buffer.writeln();
-    buffer.write(context0.documentationAsHtml);
+    buffer.write(context0.documentation);
   }
   buffer.writeln();
 
@@ -2572,7 +2572,7 @@ String
   final buffer = StringBuffer();
   if (context1.hasDocumentation == true) {
     buffer.writeln();
-    buffer.write(context1.documentationAsHtml);
+    buffer.write(context1.documentation);
   }
   buffer.writeln();
 
@@ -2668,7 +2668,7 @@ String
   final buffer = StringBuffer();
   if (context1.hasDocumentation == true) {
     buffer.writeln();
-    buffer.write(context1.documentationAsHtml);
+    buffer.write(context1.documentation);
   }
   buffer.writeln();
 
